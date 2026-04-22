@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menú Semanal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #F7F3EE;
+  --dark: #1C1A18;
+  --green: #2D5A3D;
+  --green-light: #EAF2EC;
+  --amber: #C17B2A;
+  --amber-light: #FDF3E3;
+  --red: #B84040;
+  --red-light: #FCEAEA;
+  --blue: #2A5073;
+  --blue-light: #E8F0F7;
+  --purple: #5B3A8A;
+  --purple-light: #F0EBF8;
+  --border: #E2DDD8;
+  --text-muted: #8A8480;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--dark); min-height: 100vh; }
+
+.hero { background: var(--dark); color: var(--cream); padding: 2rem 1.5rem 1.75rem; text-align: center; }
+.hero-title { font-family: 'DM Serif Display', serif; font-size: clamp(1.8rem, 6vw, 3rem); letter-spacing: -0.02em; line-height: 1.1; margin-bottom: .4rem; }
+.hero-sub { font-size: 12px; color: #A09890; font-weight: 300; letter-spacing: .04em; }
+.hero-stats { display: flex; justify-content: center; gap: 1.5rem; margin-top: 1.25rem; flex-wrap: wrap; }
+.hero-stat { text-align: center; }
+.hero-stat-val { font-family: 'DM Serif Display', serif; font-size: 1.4rem; color: #E8D5B0; }
+.hero-stat-label { font-size: 10px; color: #6B6560; text-transform: uppercase; letter-spacing: .06em; margin-top: 2px; }
+
+nav { background: white; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.nav-inner { display: flex; min-width: max-content; padding: 0 1rem; }
+.nav-btn { padding: .875rem 1rem; font-size: 13px; font-weight: 500; cursor: pointer; background: none; border: none; color: var(--text-muted); border-bottom: 2px solid transparent; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
+.nav-btn.on { color: var(--dark); border-bottom-color: var(--dark); }
+
+.section { display: none; padding: 1.25rem 1rem 3rem; max-width: 680px; margin: 0 auto; }
+.section.on { display: block; }
+
+.day-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-bottom: 1.25rem; }
+.day-btn { padding: 7px 2px; border-radius: 8px; border: 1px solid var(--border); font-size: 10px; cursor: pointer; background: white; color: var(--text-muted); text-align: center; line-height: 1.4; font-family: 'DM Sans', sans-serif; font-weight: 500; }
+.day-btn.gym { border-color: var(--amber); color: var(--amber); background: var(--amber-light); }
+.day-btn.on { background: var(--dark); color: white; border-color: var(--dark); }
+.day-btn.gym.on { background: var(--amber); color: white; }
+
+.day-summary { background: var(--dark); color: var(--cream); border-radius: 12px; padding: .875rem 1.125rem; margin-bottom: 1rem; }
+.day-summary-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: .6rem; }
+.day-summary-title { font-family: 'DM Serif Display', serif; font-size: 1.05rem; }
+.day-summary-macros { display: flex; gap: 1rem; }
+.dsm { text-align: center; }
+.dsm-val { font-size: 1rem; font-weight: 600; color: #E8D5B0; }
+.dsm-label { font-size: 10px; color: #6B6560; }
+
+.schedule-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.sched-tag { font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 500; }
+.s-gym { background: #C17B2A; color: white; }
+.s-clase { background: #2A5073; color: white; }
+.s-trabajo { background: #5B3A8A; color: white; }
+.s-libre { background: #3A3530; color: #A09890; }
+
+.meal-card { background: white; border: 1px solid var(--border); border-radius: 12px; margin-bottom: .625rem; overflow: hidden; }
+.meal-header { display: flex; align-items: center; justify-content: space-between; padding: .625rem 1rem; border-bottom: 1px solid var(--border); }
+.meal-time { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+.meal-tag { font-size: 10px; padding: 2px 8px; border-radius: 999px; font-weight: 500; }
+.tag-prep { background: var(--green-light); color: var(--green); }
+.tag-fresh { background: var(--blue-light); color: var(--blue); }
+.tag-quick { background: var(--purple-light); color: var(--purple); }
+.tag-vianda { background: var(--amber-light); color: var(--amber); }
+.tag-warn { background: var(--red-light); color: var(--red); }
+
+.meal-body { padding: .75rem 1rem; }
+.meal-title { font-family: 'DM Serif Display', serif; font-size: 1.05rem; color: var(--dark); margin-bottom: .35rem; line-height: 1.3; }
+.meal-detail { font-size: 13px; color: #5A5550; line-height: 1.6; margin-bottom: .6rem; }
+.macros { display: flex; gap: 5px; flex-wrap: wrap; }
+.macro { font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 500; }
+.m-p { background: var(--green-light); color: var(--green); }
+.m-c { background: var(--blue-light); color: var(--blue); }
+.m-g { background: var(--amber-light); color: var(--amber); }
+.m-k { background: #F0F0F0; color: #555; }
+
+.note { background: var(--amber-light); border-left: 3px solid var(--amber); border-radius: 0 8px 8px 0; padding: .7rem 1rem; font-size: 12px; color: #6B4A1A; margin-bottom: .875rem; line-height: 1.5; }
+.note-red { background: var(--red-light); border-left: 3px solid var(--red); border-radius: 0 8px 8px 0; padding: .7rem 1rem; font-size: 12px; color: #7A2020; margin-bottom: .875rem; line-height: 1.5; }
+
+.prep-card { background: var(--green-light); border: 1px solid #C5DEC9; border-radius: 12px; padding: .875rem 1.125rem; margin-bottom: .75rem; }
+.prep-title { font-family: 'DM Serif Display', serif; font-size: 1rem; color: var(--green); margin-bottom: .5rem; }
+.prep-step { display: flex; gap: 10px; padding: 5px 0; font-size: 13px; color: #2D4A35; border-bottom: 1px solid #C5DEC9; line-height: 1.5; }
+.prep-step:last-child { border-bottom: none; }
+.step-n { width: 20px; height: 20px; border-radius: 50%; background: var(--green); color: white; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+
+.list-section-title { font-family: 'DM Serif Display', serif; font-size: 1.05rem; color: var(--dark); margin: 1.5rem 0 .5rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.freq-badge { font-size: 10px; padding: 2px 8px; border-radius: 999px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+.freq-month { background: var(--purple-light); color: var(--purple); }
+.freq-week { background: var(--green-light); color: var(--green); }
+.freq-mid { background: var(--blue-light); color: var(--blue); }
+
+.shop-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: .875rem 1rem; margin-bottom: .5rem; }
+.shop-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
+.shop-item:last-child { border-bottom: none; }
+.shop-item.done .item-name { text-decoration: line-through; color: var(--text-muted); }
+.shop-item.done .item-qty { color: #CCC; }
+.cb { width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 1px; transition: all .15s; }
+.cb.chk { background: var(--green); border-color: var(--green); }
+.chksvg { display: none; }
+.cb.chk .chksvg { display: block; }
+.item-name { font-size: 14px; color: var(--dark); flex: 1; line-height: 1.4; }
+.item-qty { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+.item-note { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+.pbar-wrap { height: 4px; background: var(--border); border-radius: 999px; margin-bottom: 1.5rem; overflow: hidden; }
+.pbar { height: 100%; background: var(--green); border-radius: 999px; transition: width .3s; }
+.shop-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 0 .75rem; }
+.shop-counter { font-size: 13px; color: var(--text-muted); }
+.shop-counter span { font-weight: 600; color: var(--dark); }
+.reset-btn { font-size: 12px; padding: 5px 12px; border-radius: 8px; border: 1px solid var(--border); background: white; color: var(--text-muted); cursor: pointer; font-family: 'DM Sans', sans-serif; }
+
+.macro-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1.25rem; }
+.macro-box { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 1rem; text-align: center; }
+.macro-box-val { font-family: 'DM Serif Display', serif; font-size: 1.8rem; color: var(--dark); line-height: 1; }
+.macro-box-unit { font-size: 12px; color: var(--text-muted); }
+.macro-box-label { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+.info-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: .875rem 1.125rem; margin-bottom: .75rem; }
+.info-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.info-row:last-child { border-bottom: none; }
+.info-label { color: var(--text-muted); }
+.info-val { font-weight: 600; color: var(--dark); text-align: right; }
+.section-sub { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); margin: 1rem 0 .5rem; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-title">Menú Semanal</div>
+  <div class="hero-sub">Recomposición · 61 kg · 1.67 m · Gym lun / jue / sáb</div>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="hero-stat-val">~2.050</div><div class="hero-stat-label">kcal gym</div></div>
+    <div class="hero-stat"><div class="hero-stat-val">~1.900</div><div class="hero-stat-label">kcal descanso</div></div>
+    <div class="hero-stat"><div class="hero-stat-val">~115g</div><div class="hero-stat-label">proteína</div></div>
+  </div>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <button class="nav-btn on" onclick="showTab('menu',this)">Menú</button>
+    <button class="nav-btn" onclick="showTab('prep',this)">Meal Prep</button>
+    <button class="nav-btn" onclick="showTab('lista',this)">Lista</button>
+    <button class="nav-btn" onclick="showTab('macros',this)">Macros</button>
+  </div>
+</nav>
+
+<!-- MENU -->
+<div id="menu" class="section on">
+  <div class="day-row">
+    <button class="day-btn gym on" id="b-lun" onclick="showDay('lun',this)">Lun<br>gym</button>
+    <button class="day-btn" id="b-mar" onclick="showDay('mar',this)">Mar<br>desc</button>
+    <button class="day-btn" id="b-mie" onclick="showDay('mie',this)">Mié<br>desc</button>
+    <button class="day-btn gym" id="b-jue" onclick="showDay('jue',this)">Jue<br>gym</button>
+    <button class="day-btn" id="b-vie" onclick="showDay('vie',this)">Vie<br>desc</button>
+    <button class="day-btn gym" id="b-sab" onclick="showDay('sab',this)">Sáb<br>gym</button>
+    <button class="day-btn" id="b-dom" onclick="showDay('dom',this)">Dom<br>prep</button>
+  </div>
+
+  <!-- LUNES -->
+  <div id="d-lun">
+    <div class="day-summary">
+      <div class="day-summary-top">
+        <div class="day-summary-title">Lunes</div>
+        <div class="day-summary-macros">
+          <div class="dsm"><div class="dsm-val">~2.100</div><div class="dsm-label">kcal</div></div>
+          <div class="dsm"><div class="dsm-val">~118g</div><div class="dsm-label">prot</div></div>
+        </div>
+      </div>
+      <div class="schedule-row">
+        <span class="sched-tag s-gym">🏋️ Gym 7:30</span>
+        <span class="sched-tag s-clase">📚 Clase 12:30–17hs</span>
+      </div>
+    </div>
+    <div class="note">Gym temprano y después clase todo el mediodía → desayuno post-gym fuerte, almuerzo es vianda que llevás a la facu.</div>
+
+    <div class="meal-card">
+      <div class="meal-header"><span class="meal-time">Pre-gym · 7:00 hs</span><span class="meal-tag tag-quick">2 min</span></div>
+      <div class="meal-body">
+        <div class="meal-title">Banana + mantequilla de maní</div>
+        <div class="meal-detail">1 banana + 20g mantequilla de maní. Energía rápida antes del entreno.</div>
+        <div class="macros"><span class="macro m-p">P 5g</span><span class="macro m-c">C 32g</span><span class="macro m-g">G 8g</span><span class="macro m-k">~215 kcal</span></div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-header"><span class="meal-time">Post-gym · 9:00 hs</span><span class="meal-tag tag-quick">10 min</span></div>
+      <div class="meal-body">
+        <div class="meal-title">Avena con huevos revueltos</div>
+        <div class="meal-detail">60g avena con leche + 2 huevos revueltos con tomate + café. En casa antes de salir a clase.</div>
+        <div class="macros"><span class="macro m-p">P 28g</span><span class="macro m-c">C 52g</span><span class="macro m-g">G 14g</span><span class="macro m-k">~440 kcal</span></div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-header"><span class="meal-time">Almuerzo · en clase (13 hs)</span><span class="meal-tag tag-vianda">vianda del prep</span></div>
+      <div class="meal-body">
+        <div class="meal-title">Taco Bowl en tupper</div>
+        <div class="meal-detail">180g pechuga desmenuzada (cocida del prep) + 120g arroz cocido (~40g seco) + pico de gallo (tomate, cebolla, limón) + yogur como sour cream en frasquito aparte. Armado la noche anterior.</div>
+        <div class="macros"><span class="macro m-p">P 48g</span><span class="macro m-c">C 55g</span><span class="macro m-g">G 6g</span><span class="macro m-k">~465 kcal</span></div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-header"><span class="meal-time">Merienda · 17:15 hs</span><span class="meal-tag tag-quick">2 min</span></div>
+      <div class="meal-body">
+        <div class="meal-title">Yogur con avena y fruta</div>
+        <div class="meal-detail">250g yogur casero + 20g avena + canela + fruta. En casa al llegar de clase.</div>
+        <div class="macros"><span class="macro m-p">P 14g</span><span class="macro m-c">C 30g</span><span class="macro m-g">G 4g</span><span class="macro m-k">~210 kcal</span></div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-header"><span class="meal-time">Cena · 21:00 hs</span><span class="meal-tag tag-prep">del prep</span></div>
+      <div class="meal-body">
+        <div class="meal-title">Picada con lentejas y batata</div>
+        <div class="meal-detail">150g picada cocida del prep + 80g lentejas cocidas (~32g seco) + 150g batata rosteada (cruda al horno). Todo del tupper, calentar y listo.</div>
+        <div class="macros"><span class="macro m-p">P 40g</span><span class="macro m-c">C 48g</span><span class="macro m-g">G 12g</span><span class="macro m-k">~460 kcal</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MARTES -->
+  <div id="d-mar" style="display:none">
+    <div class="day-summary">
+      <div class="day-summary-top">
+        <div class="day-summary-title">Martes</div>
+        <div class="day-summary-macros">
+          <div class="dsm"><div class="dsm-val">~1.900</div><div class="dsm-label">kcal</div></div>
+          <div class="dsm"><div class="dsm-val">~110g</div><div class="dsm-label">prot</div></div>
+        </div>
+      </div>
+      <div class="schedule-row">
+        <span class="sched-tag s-libre">Mañana libre</span>
+        <span class="sched-tag s-clase">📚 Clase 17:30–19hs</span>
+      </div>
+    </div>
+    <div class="note">Mañana libre para cocinar tranquila. Merienda antes de las 17:30 que arrancás clase.</div>
+
+    <div class="meal-card">
+      <div class="meal-header"><span class="meal-time">Desayuno · 9:00 hs</span><span class="meal-tag tag-quick">10 min</span></div>
+      <div class="meal-body">
+        <div class="meal-title">Tortilla de espinaca con queso untable</div>
+        <div class="meal-detail">3 huevos + espinaca descongelada + 30g queso untable + 1 tostada integral.</div>
+        <div class="macros"><span class="macro m-p">P 26g</span><span class="macro m-c">C 18g</span><span class="macro m-g">G 16g</span><span class="macro m-k">~320 kcal</span></div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-header"><span class="meal-time">Almuerzo · 13:00 hs</span><span class="meal-tag tag-prep">del prep</span></div>
+      <div class="meal-body">
+        <div class="meal-title">Bowl de pechuga con arroz y brócoli</div>
+        <div class="meal-detail">180g pechuga cocida del prep + 100g arroz cocido (~33g seco) + brócoli rosteado del prep + aderezo de yogur con limón y ajo.</div>
+        <div class="macros"><span class="macro m-p">P 48g</span><span class="macro m-c">C 42g</span><span class="macro m-g">G 5g</span><span class="macro m-k">~405 kcal</span></div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-header"><span class="meal-time">Merienda · 16:45 hs</span><span class="meal-tag tag-quick">2 min</span></div>
+      <div class="meal-body">
+        <div class="meal-title">Maní + fruta</div>
+        <div class="meal-detail">30g maní + 1 fruta. Antes de salir a clase — rápido y portable.</div>
+        <div class="macros"><span class="macro m-p">P 7g</span><span class="macro m-c">C 20g</span><span class="macro m-g">G 15g</span><span class="macro m-k">~240 kcal</span></div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-header"><span class="meal-time">Cena · 20:00 hs</span><span class="meal-tag tag-fresh">15 min</span></div>
+      <div class="meal-body">
+        <div class="meal-title">Nalga a la plancha con ensalada</div>
+        <div class="meal-detail">170g nalga en bife a la plancha + ensalada de lechuga, tomate, pepino + ¼ palta + vinagreta de mostaza y limón.</div>
+        <div class="macros"><span class="macro m-p">P 40g</span><span class="macro m-c">C 8g</span><span class="macro m-g">G 14g</span><span class="macro m-k">~315 kcal</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MIERCOLES -->
+  <div id="d-mie" style="display:none">
+    <div class="day-summary">
+      <div class="day-summary-top">
+        <div class="day-summary-title">Miércoles</div>
+        <div class="day-summary-macros">
+          <div class="dsm"><div class="dsm-val">~1.900</div><div class="dsm-label">kcal</div></div>
+          <div class="dsm"><div class="dsm-val">~112g</div><div class="dsm-label">prot</div></div>
+        </div>
+      </div>
+      <div class="schedule-row">
+        <span class="sched-tag s-clase">📚 Clase 12:30–17hs</span>
+        <span class="sched-tag s-trabajo">💼 Trabajo 17–20hs</span>
+      </div>
+    </div>
+    <div class="note-red">Día más cargado: clase directo al trabajo, llegás a las 20hs. Todo tiene que estar listo del prep — no cocinás nada. Cena en 5 minutos máximo.</div>
+
+    <div class="meal-card">
+      <div class="meal-header"><span class="meal-time">Desayuno · 8:00 hs</span><span class="meal-tag tag-quick">5 min</span></div>
+      <div class="meal-body">
+        <div class="meal-title">Avena con yogur casero</div>
+        <div class="meal-detail">60g avena + 200g yogur + canela + fruta. Sin cocinar, en 5 minutos.</div>
+        <div class="macros"><span class="macro m-p">P 18g</span><span class="macro m-c">C 55g</span><span class="macro m-g">G 5g</span><span class="macro m-k">~335 kcal</span></div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-header"><span class="meal-time">Almuerzo · en clase (13 hs)</span><span class="meal-tag tag-vianda">vianda del prep</span></div>
+      <div class="meal-body">
+        <div class="meal-title">Burrito de pollo en tupper</div>
+        <div class="meal-detail">180g pechuga cocida del prep + morrón salteado + 80g arroz cocido (~27g seco) + yogur + mostaza en tortilla integral. Armado la noche anterior, envuelto en papel aluminio.</div>
+        <div class="macros"><span class="macro m-p">P 48g</span><span class="macro m-c">C 50g</span><span class="macro m-g">G 7g</span><span class="macro m-k">~455 kcal</span></div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-header"><span class="meal-time">Entre clase y trabajo · 17:00 hs</span><span class="meal-tag tag-quick">2 min</span></div>
+      <div class="meal-body">
+        <div class="meal-title">Snack rápido portable</div>
+        <div class="meal-detail">2 huevos duros del prep + 1 fruta o 20g maní. Lo llevás desde casa, lo comés entre clase y trabajo.</div>
+        <div class="macros"><span class="macro m-p">P 14g</span><span class="macro m-c">C 15g</span><span class="macro m-g">G 12g</span><span class="macro m-k">~225 kcal</span></div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-header"><span class="meal-time">Cena · 20:15 hs</span><span class="meal-tag tag-prep">del prep · 5 min</span></div>
+      <div class="meal-body">
+        <div class="meal-title">Bowl de lentejas con huevo duro</div>
+        <div class="meal-detail">150g lentejas cocidas del prep (~60g seco) + 80g arroz cocido (~27g seco) + zanahoria rallada cruda + 1 huevo duro + comino y limón. Abrís tuppers, mezclás, listo. Sin cocinar nada.</div>
+        <div class="macros"><span class="macro m-p">P 26g</span><span class="macro m-c">C 52g</span><span class="macro m-g">G 7g</span><span class="macro m-k">~375 kcal</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JUEVES -->
+  <div id="d-jue" style="display:none">
+    <div class="day-summary">
+      <div class="day-summary-top">
+        <div class="day-summary-title">Jueves</div>
+        <div class="day-summary-macros">
+          <div class="dsm"><div class="dsm-val">~2.100</div><div class="dsm-label">kcal</div></div>
+          <div class="dsm"><div class="dsm-val">~120g</div><div class="dsm-label">prot</div></div>
+        </div>
+      </div>
+      <div class="schedule-row">
+        <span class="sched-tag s-clase">📚 Clase 8:30–12:30</span>
+        <span class="sched-tag s-gym">🏋️ Gym 13hs</span>
+        <span class="sched-tag s-trabajo">💼 Trabajo 17–20hs</span>
+      </div>
+    </div>
+    <div class="note-red">Día más apretado: clase → gym → trabajo sin parar. Pre-gym es la única ventana libre. El almuerzo post-gym tiene que ser rápido (15 min máximo). Cena al volver del trabajo, rápida.</div>
+
+    <div class="meal-card">
+      <div class="meal-header"><span class="meal-time">Desayuno · 7:30 hs</span><span class="meal-tag tag-quick">10 min</span></div>
+      <div class="meal-body">
+        <div class="meal-title">Huevos revueltos con tostada</div>
+        <div class="meal-detail">3 huevos revueltos + queso cremoso + 2 tostadas integrales + café. Antes de salir a clase.</div>
+        <div class="macros"><span class="macro m-p">P 24g</span><span class="macro m-c">C 28g</span><span class="macro m-g">G 18g</span><span class="macro m-k">~365 kcal</span></div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-header"><span class="meal-time">Pre-gym · 12:30 hs</span><span class="meal-tag tag-quick">2 min</span></div>
+      <div class="meal-body">
+        <div class="meal-title">Banana + maní</div>
+        <div class="meal-detail">1 banana + 20g maní. Lo llevás de casa a clase, lo comés al salir antes del gym.</div>
+        <div class="macros"><span class="macro m-p">P 5g</span><span class="macro m-c">C 28g</span><span class="macro m-g">G 8g</span><span class="macro m-k">~200 kcal</span></div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-header"><span class="meal-time">Almuerzo post-gym · 14:30 hs</span><span class="meal-tag tag-fresh">15 min</span></div>
+      <div class="meal-body">
+        <div class="meal-title">Cheeseburger saludable en tupper</div>
+        <div class="meal-detail">180g pechuga cruda picada en bolitas al horno + 300g papa cruda en bastones al horno + queso cremoso fundido. Salsa: yogur + mostaza + limón. Hacés todo junto, rinde también para el viernes.</div>
+        <div class="macros"><span class="macro m-p">P 50g</span><span class="macro m-c">C 55g</span><span class="macro m-g">G 12g</span><span class="macro m-k">~530 kcal</span></div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-header"><span class="meal-time">Cena · 20:15 hs</span><span class="meal-tag tag-quick">5 min</span></div>
+      <div class="meal-body">
+        <div class="meal-title">Pechuga del tupper con ensalada</div>
+        <div class="meal-detail">El sobrante del cheeseburger de hoy o pechuga fresca a la plancha (10 min) + ensalada grande con palta. Sin carbos pesados — llegás cansada y es tarde.</div>
+        <div class="macros"><span class="macro m-p">P 44g</span><span class="macro m-c">C 10g</span><span class="macro m-g">G 12g</span><span class="macro m-k">~320 kcal</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIERNES -->
+  <div id="d-vie" style="display:none">
+    <div class="day-summary">
+      <div class="day-summary-top">
+        <div class="day-summary-title">Viernes</div>
+        <div class="day-summary-macros">
+          <div class="dsm"><div class="dsm-val">~1.900</div><div class="dsm-label">kcal</div></div>
+          <div class="dsm"><div class="dsm-val">~110g</div><div class="dsm-label">prot</div></div>
+        </div>
+      </div>
+      <div class="schedule-row">
+        <span class="sched-tag s-libre">Día libre</span>
+      </div>
+    </div>
+    <div class="note">Día completamente libre. Cocinás tranquila. Mañana es gym → cena con carbos para cargar.</div>
+
+    <div class="meal-card">
+      <div class="meal-header"><span class="meal-time">Desayuno · 9:00 hs</span><span class="meal-tag tag-quick">8 min</span></div>
+      <div class="meal-body">
+        <div class="meal-title">Tortilla con queso y tomate</div>
+        <div class="meal-detail">3 huevos + queso cremoso 30g + tomate + 1 tostada integral.</div>
+        <div class="macros"><span class="macro m-p">P 26g</span><span class="macro m-c">C 16g</span><span class="macro m-g">G 18g</span><span class="macro m-k">~325 kcal</span></div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-header"><span class="meal-time">Almuerzo · 13:00 hs</span><span class="meal-tag tag-fresh">20 min</span></div>
+      <div class="meal-body">
+        <div class="meal-title">Risotto de calabaza con pollo</div>
+        <div class="meal-detail">150g pechuga con pimentón, canela y miel + 90g arroz + 300g calabaza + cebolla + ajo + 2 cdas queso untable. Hacés 2-3 porciones — una queda para el domingo.</div>
+        <div class="macros"><span class="macro m-p">P 42g</span><span class="macro m-c">C 65g</span><span class="macro m-g">G 12g</span><span class="macro m-k">~540 kcal</span></div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-header"><span class="meal-time">Merienda · 17:00 hs</span><span class="meal-tag tag-quick">2 min</span></div>
+      <div class="meal-body">
+        <div class="meal-title">Yogur con maní</div>
+        <div class="meal-detail">200g yogur casero + 20g maní.</div>
+        <div class="macros"><span class="macro m-p">P 13g</span><span class="macro m-c">C 14g</span><span class="macro m-g">G 13g</span><span class="macro m-k">~225 kcal</span></div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-header"><span class="meal-time">Cena · 21:00 hs</span><span class="meal-tag tag-fresh">15 min</span></div>
+      <div class="meal-body">
+        <div class="meal-title">Milanesa de nalga al horno + batata</div>
+        <div class="meal-detail">160g nalga en milanesa al horno + 150g batata + rúcula con salsa verde. Carbos cargados pre-gym de mañana.</div>
+        <div class="macros"><span class="macro m-p">P 42g</span><span class="macro m-c">C 42g</span><span class="macro m-g">G 10g</span><span class="macro m-k">~430 kcal</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SABADO -->
+  <div id="d-sab" style="display:none">
+    <div class="day-summary">
+      <div class="day-summary-top">
+        <div class="day-summary-title">Sábado</div>
+        <div class="day-summary-macros">
+          <div class="dsm"><div class="dsm-val">~2.100</div><div class="dsm-label">kcal</div></div>
+          <div class="dsm"><div class="dsm-val">~115g</div><div class="dsm-label">prot</div></div>
+        </div>
+      </div>
+      <div class="schedule-row">
+        <span class="sched-tag s-gym">🏋️ Gym 10hs</span>
+        <span class="sched-tag s-libre">Tarde/noche libre</span>
+      </div>
+    </div>
+    <div class="note">Día más relajado de la semana. Post-gym almuerzo fuerte. Cena libre — si salís, sin drama.</div>
+
+    <div class="meal-card">
+      <div class="meal-header"><span class="meal-time">Pre-gym · 9:30 hs</span><span class="meal-tag tag-quick">2 min</span></div>
+      <div class="meal-body">
+        <div class="meal-title">Tostada con mantequilla de maní</div>
+        <div class="meal-detail">1 tostada integral + 20g mantequilla de maní + café.</div>
+        <div class="macros"><span class="macro m-p">P 6g</span><span class="macro m-c">C 20g</span><span class="macro m-g">G 8g</span><span class="macro m-k">~175 kcal</span></div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-header"><span class="meal-time">Almuerzo post-gym · 12:00 hs</span><span class="meal-tag tag-fresh">20 min</span></div>
+      <div class="meal-body">
+        <div class="meal-title">Cheesy taco rice con soja</div>
+        <div class="meal-detail">150g picada magra cruda + 80g soja texturizada ya hidratada (~32g seco) + paprika, comino, ajo, sal + 100g arroz seco en sartén con caldo + 30g queso cremoso fundido. Todo en una sola sartén.</div>
+        <div class="macros"><span class="macro m-p">P 52g</span><span class="macro m-c">C 58g</span><span class="macro m-g">G 14g</span><span class="macro m-k">~570 kcal</span></div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-header"><span class="meal-time">Merienda · 17:00 hs</span><span class="meal-tag tag-quick">5 min</span></div>
+      <div class="meal-body">
+        <div class="meal-title">Avena con yogur y banana</div>
+        <div class="meal-detail">50g avena + 200g yogur casero + banana o fruta de estación.</div>
+        <div class="macros"><span class="macro m-p">P 14g</span><span class="macro m-c">C 52g</span><span class="macro m-g">G 4g</span><span class="macro m-k">~300 kcal</span></div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-header"><span class="meal-time">Cena · flexible</span><span class="meal-tag tag-fresh">libre</span></div>
+      <div class="meal-body">
+        <div class="meal-title">Libre — priorizá proteína</div>
+        <div class="meal-detail">Si comés en casa: muslo de pollo al horno con ensalada. Si salís: pedí proteína + algo verde. No es un drama si el sábado a la noche no es perfecto.</div>
+        <div class="macros"><span class="macro m-p">~P 40g</span><span class="macro m-k">flexible</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOMINGO -->
+  <div id="d-dom" style="display:none">
+    <div class="day-summary">
+      <div class="day-summary-top">
+        <div class="day-summary-title">Domingo — Meal Prep</div>
+        <div class="day-summary-macros">
+          <div class="dsm"><div class="dsm-val">60 min</div><div class="dsm-label">total</div></div>
+          <div class="dsm"><div class="dsm-val">Lun→Mié</div><div class="dsm-label">rinde</div></div>
+        </div>
+      </div>
+      <div class="schedule-row"><span class="sched-tag s-libre">Día libre</span></div>
+    </div>
+    <div class="note">Cocinás todo junto una vez. El horno trabaja solo, vos manejás la hornalla mientras tanto. Todo queda listo para los tres días más cargados de la semana.</div>
+
+    <div class="meal-card">
+      <div class="meal-header"><span class="meal-time">Comida del domingo</span><span class="meal-tag tag-prep">sobrante</span></div>
+      <div class="meal-body">
+        <div class="meal-title">Risotto de calabaza del viernes</div>
+        <div class="meal-detail">Cocinaste 2-3 porciones el viernes. El domingo comés la que sobró sin cocinar nada nuevo.</div>
+        <div class="macros"><span class="macro m-p">P ~42g</span><span class="macro m-k">~540 kcal</span></div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-header"><span class="meal-time">Prep de la tarde</span><span class="meal-tag tag-prep">60 min</span></div>
+      <div class="meal-body">
+        <div class="meal-title">Lo que preparás para lun–mié</div>
+        <div class="meal-detail">
+          <strong>Horno (200°C):</strong> 600g pechuga marinada + brócoli + batata en cubos. Todo junto, 25–30 min.<br><br>
+          <strong>Hornalla:</strong> 300g arroz seco mientras el horno trabaja. En paralelo: 200g lentejas secas, 25 min.<br><br>
+          <strong>Extras:</strong> 4 huevos duros + salsa verde + aderezo de yogur. 10 min al final.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PREP -->
+<div id="prep" class="section">
+  <div class="note" style="margin-top:.5rem">Todo el domingo en ~60 minutos. El horno hace el trabajo mientras vos manejás la hornalla. Rinde lunes, martes y miércoles — los tres días más cargados.</div>
+
+  <div class="prep-card">
+    <div class="prep-title">🍗 Pechuga al horno — 600g</div>
+    <div class="prep-step"><div class="step-n">1</div>Horno a 200°C. Marinás: paprika, ajo, comino, sal, limón.</div>
+    <div class="prep-step"><div class="step-n">2</div>Al horno 25–30 min. Mientras tanto cocinás arroz y lentejas.</div>
+    <div class="prep-step"><div class="step-n">3</div>Enfriás, desmenuzás a mano. Tupper con un poco del jugo. Heladera 4 días.</div>
+  </div>
+
+  <div class="prep-card">
+    <div class="prep-title">🥦 Verdura rosteada — brócoli + batata</div>
+    <div class="prep-step"><div class="step-n">1</div>Brócoli en floretes + batata en cubos de 2cm.</div>
+    <div class="prep-step"><div class="step-n">2</div>Aceite + sal + paprika. Al horno junto al pollo, 20 min.</div>
+    <div class="prep-step"><div class="step-n">3</div>Tupper seco. Heladera 4 días.</div>
+  </div>
+
+  <div class="prep-card">
+    <div class="prep-title">🍚 Arroz — 300g seco</div>
+    <div class="prep-step"><div class="step-n">1</div>Lavás, 2 partes agua por 1 de arroz, sal.</div>
+    <div class="prep-step"><div class="step-n">2</div>Hervís, tapás, fuego mínimo 15 min. No destapás.</div>
+    <div class="prep-step"><div class="step-n">3</div>Rinde ~900g cocido. Heladera 5 días.</div>
+  </div>
+
+  <div class="prep-card">
+    <div class="prep-title">🫘 Lentejas — 200g seco</div>
+    <div class="prep-step"><div class="step-n">1</div>Sin remojo. Enjuagás y directo a la olla con agua fría + laurel + sal.</div>
+    <div class="prep-step"><div class="step-n">2</div>Fuego medio, 25 min. Escurrís, guardás con un poco del líquido.</div>
+    <div class="prep-step"><div class="step-n">3</div>Heladera 4 días.</div>
+  </div>
+
+  <div class="prep-card">
+    <div class="prep-title">🥚 Huevos duros — 4 unidades</div>
+    <div class="prep-step"><div class="step-n">1</div>Agua fría con los huevos desde el principio.</div>
+    <div class="prep-step"><div class="step-n">2</div>Desde que hierve: 10 minutos exactos. Agua fría inmediata.</div>
+    <div class="prep-step"><div class="step-n">3</div>Sin pelar en heladera toda la semana.</div>
+  </div>
+
+  <div class="prep-card">
+    <div class="prep-title">🫙 Salsa verde + aderezo de yogur</div>
+    <div class="prep-step"><div class="step-n">1</div>Salsa verde: perejil picado + ajo rallado + limón + sal + aceite. Frasquito.</div>
+    <div class="prep-step"><div class="step-n">2</div>Aderezo yogur: 100g yogur + limón + ajo + sal + mostaza opcional.</div>
+    <div class="prep-step"><div class="step-n">3</div>Ambos duran toda la semana en heladera.</div>
+  </div>
+
+  <div class="info-card" style="margin-top:1rem">
+    <div class="section-sub" style="margin-top:0">Cronograma del domingo</div>
+    <div class="info-row"><span class="info-label">0:00</span><span class="info-val">Horno a 200°C. Marinás pollo. Lentejas a la olla.</span></div>
+    <div class="info-row"><span class="info-label">0:10</span><span class="info-val">Pollo + verdura al horno. Arroz a la hornalla.</span></div>
+    <div class="info-row"><span class="info-label">0:25</span><span class="info-val">Arroz y lentejas listos. Sacás verdura.</span></div>
+    <div class="info-row"><span class="info-label">0:35</span><span class="info-val">Sacás pollo. Hervís huevos duros. Hacés salsas.</span></div>
+    <div class="info-row"><span class="info-label">0:55</span><span class="info-val">Todo en tuppers etiquetados. Listo.</span></div>
+  </div>
+</div>
+
+<!-- LISTA -->
+<div id="lista" class="section">
+  <div class="shop-header">
+    <div class="shop-counter">Tildados: <span id="cnt">0</span> / <span id="tot">0</span></div>
+    <button class="reset-btn" onclick="resetAll()">Reiniciar</button>
+  </div>
+  <div class="pbar-wrap"><div class="pbar" id="pb" style="width:0%"></div></div>
+
+  <div class="list-section-title">Alacena <span class="freq-badge freq-month">1 vez por mes</span></div>
+  <div class="shop-card">
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Avena arrollada</div><div class="item-qty">1 kg</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Arroz</div><div class="item-qty">2 kg</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Lentejas secas</div><div class="item-qty">1 kg</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Garbanzos en lata</div><div class="item-qty">4 latas</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Tomate triturado en lata</div><div class="item-qty">6 latas</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Soja texturizada fina</div><div class="item-qty">500 g</div><div class="item-note">Dura meses, para estirar la picada</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Mantequilla de maní sin azúcar</div><div class="item-qty">1 frasco 350g</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Maní sin sal</div><div class="item-qty">300 g</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Pan rallado</div><div class="item-qty">300 g</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Tortillas integrales o pan árabe</div><div class="item-qty">2 paquetes</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Espinaca congelada</div><div class="item-qty">1 bolsa 500g</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Paprika, comino, orégano, canela</div><div class="item-qty">1 de cada uno</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Caldo en cubitos bajo sodio</div><div class="item-qty">1 caja</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Mermelada sin azúcar</div><div class="item-qty">1 frasco</div></div></div>
+  </div>
+
+  <div class="list-section-title">Proteínas y lácteos <span class="freq-badge freq-week">cada semana</span></div>
+  <div class="shop-card">
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Pechuga de pollo</div><div class="item-qty">1 kg</div><div class="item-note">600g prep dom + 400g fresco jue/vie</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Carne picada magra</div><div class="item-qty">400 g</div><div class="item-note">Sáb + congelás el resto</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Nalga (bifes o milanesas)</div><div class="item-qty">350 g</div><div class="item-note">Mar cena + vie cena</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Huevos</div><div class="item-qty">18 unidades</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Leche</div><div class="item-qty">2 litros</div><div class="item-note">1L yogur casero + avena</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Queso untable</div><div class="item-qty">200 g</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Queso cremoso / cuartirolo</div><div class="item-qty">150 g</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Pan integral</div><div class="item-qty">1 paquete</div></div></div>
+  </div>
+
+  <div class="list-section-title">Frescos <span class="freq-badge freq-mid">2 veces por semana</span></div>
+  <div class="shop-card">
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Lechuga o rúcula</div><div class="item-qty">1 planta</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Tomate</div><div class="item-qty">6 unidades</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Banana</div><div class="item-qty">5 unidades</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Palta</div><div class="item-qty">2 unidades</div><div class="item-note">Comprala verde, madura en 2–3 días</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Fruta de estación</div><div class="item-qty">4–5 unidades</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Perejil fresco</div><div class="item-qty">1 atado</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Batata</div><div class="item-qty">800 g</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Papa</div><div class="item-qty">600 g</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Brócoli</div><div class="item-qty">1 grande</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Zucchini</div><div class="item-qty">2 unidades</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Calabaza</div><div class="item-qty">400 g</div><div class="item-note">Risotto del viernes</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Zanahoria</div><div class="item-qty">4 unidades</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Morrón rojo o verde</div><div class="item-qty">2 unidades</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Cebolla</div><div class="item-qty">3 unidades</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Ajo</div><div class="item-qty">1 cabeza</div></div></div>
+    <div class="shop-item" onclick="tog(this)"><div class="cb"><svg class="chksvg" width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="item-name">Limón</div><div class="item-qty">5 unidades</div></div></div>
+  </div>
+</div>
+
+<!-- MACROS -->
+<div id="macros" class="section">
+  <div class="macro-grid">
+    <div class="macro-box"><div class="macro-box-val">2.050</div><div class="macro-box-unit">kcal</div><div class="macro-box-label">días de gym</div></div>
+    <div class="macro-box"><div class="macro-box-val">1.900</div><div class="macro-box-unit">kcal</div><div class="macro-box-label">días de descanso</div></div>
+    <div class="macro-box"><div class="macro-box-val" style="color:var(--green)">~115g</div><div class="macro-box-unit">proteína</div><div class="macro-box-label">todos los días</div></div>
+    <div class="macro-box"><div class="macro-box-val" style="color:var(--blue)">~210g</div><div class="macro-box-unit">carbos</div><div class="macro-box-label">gym / ~170g desc</div></div>
+  </div>
+
+  <div class="info-card">
+    <div class="section-sub" style="margin-top:0">Cómo se calculó</div>
+    <div class="info-row"><span class="info-label">Peso / altura</span><span class="info-val">61 kg / 1.67 m</span></div>
+    <div class="info-row"><span class="info-label">TMB (Mifflin)</span><span class="info-val">~1.418 kcal</span></div>
+    <div class="info-row"><span class="info-label">Actividad real</span><span class="info-val">Gym + niñera + cursada → 1.55</span></div>
+    <div class="info-row"><span class="info-label">TDEE estimado</span><span class="info-val">~2.200 kcal</span></div>
+    <div class="info-row"><span class="info-label">Déficit aplicado</span><span class="info-val">−150 kcal (moderado)</span></div>
+    <div class="info-row"><span class="info-label">Objetivo</span><span class="info-val">~2.050 gym / ~1.900 desc</span></div>
+  </div>
+
+  <div class="info-card">
+    <div class="section-sub" style="margin-top:0">Por qué estos números</div>
+    <div class="info-row"><span class="info-label">Déficit chico</span><span class="info-val">Protege hormonas y energía</span></div>
+    <div class="info-row"><span class="info-label">Proteína 115g</span><span class="info-val">~1.9g/kg — preserva músculo</span></div>
+    <div class="info-row"><span class="info-label">Carbos más altos gym</span><span class="info-val">Energía y recuperación muscular</span></div>
+    <div class="info-row"><span class="info-label">Grasas ~60g</span><span class="info-val">Mínimo funcional hormonal</span></div>
+  </div>
+
+  <div class="note">No hace falta pesar todo. Si en cada comida hay proteína visible + carbos reales + verdura, ya estás dentro del rango.</div>
+</div>
+
+<script>
+function showTab(id, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('on'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  el.classList.add('on');
+}
+const days = ['lun','mar','mie','jue','vie','sab','dom'];
+function showDay(id, el) {
+  days.forEach(d => {
+    document.getElementById('d-'+d).style.display = 'none';
+    document.getElementById('b-'+d).classList.remove('on');
+  });
+  document.getElementById('d-'+id).style.display = 'block';
+  el.classList.add('on');
+}
+function upd() {
+  const all = document.querySelectorAll('.shop-item');
+  const done = document.querySelectorAll('.shop-item.done');
+  document.getElementById('cnt').textContent = done.length;
+  document.getElementById('tot').textContent = all.length;
+  document.getElementById('pb').style.width = Math.round(done.length / all.length * 100) + '%';
+}
+function tog(el) {
+  el.classList.toggle('done');
+  el.querySelector('.cb').classList.toggle('chk');
+  upd();
+}
+function resetAll() {
+  document.querySelectorAll('.shop-item').forEach(el => {
+    el.classList.remove('done');
+    el.querySelector('.cb').classList.remove('chk');
+  });
+  upd();
+}
+upd();
+</script>
+</body>
+</html>
